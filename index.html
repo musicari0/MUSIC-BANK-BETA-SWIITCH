@@ -136,6 +136,7 @@
   .tag { font: 700 10px/1 var(--data); letter-spacing: .08em; padding: 4px 6px 3px; border-radius: 3px; border: 1px solid var(--ink); }
   .tag.box { background: var(--ink); color: var(--paper); }
   .tag.run { background: transparent; color: var(--ink); }
+  .tag.lob { background: transparent; color: var(--ink); border-style: dashed; }
   .turno { font: 400 11px/1 var(--data); color: var(--ink-3); letter-spacing: .04em; }
   .pl-name { font: 600 16px/1.2 var(--text); letter-spacing: -.01em; }
   .pl-meta { grid-column: 1; font: 400 11px/1.3 var(--data); color: var(--ink-3); }
@@ -145,7 +146,7 @@
   .pl-go svg { width: 13px; height: 13px; }
   .pl:hover { background: var(--ink); color: var(--paper); }
   .pl:hover .tag.box { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-  .pl:hover .tag.run { color: var(--paper); border-color: var(--paper); }
+  .pl:hover .tag.run, .pl:hover .tag.lob { color: var(--paper); border-color: var(--paper); }
   .pl:hover .turno, .pl:hover .pl-meta { color: #C9CACD; }
   .pl:hover .pl-go { background: var(--marker); border-color: var(--marker); color: var(--ink); transform: rotate(-12deg); }
   .pl:focus-visible { z-index: 2; }
@@ -164,13 +165,16 @@
   .rotation p { margin: 0; color: var(--ink-2); max-width: 38ch; }
   .rotation-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-left: 1px solid var(--rule); border-top: 1px solid var(--rule); }
   .rotation-list .pl { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 16px; }
+  .lobby .rotation-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lobby .rotation-list .pl { min-height: 112px; }
   .rotation-list .pl-name { font: 700 clamp(20px, 2vw, 26px)/1.1 var(--display); letter-spacing: -.02em; }
 
   .week.first-past { margin-top: 56px; border-top: 2px solid var(--rule); }
   .week.is-past .day-num, .week.is-past .week-head h2 { color: var(--ink-3); }
   .empty { display: none; padding: 48px 0; font: 600 18px/1.4 var(--text); }
   body.nothing .empty { display: block; }
-  body.nothing .week, body.nothing .rotation { display: none; }
+  body.nothing .week, body.nothing .rotation, .week.off, .rotation.off { display: none; }
+  .weeks a[hidden] { display: none; }
 
   footer { margin-top: 72px; border-top: 2px solid var(--rule); }
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 16px 32px; flex-wrap: wrap; padding: 22px var(--gutter) 40px; }
@@ -205,7 +209,9 @@
     .day.empty-day { display: none; }
     .week { padding-top: 32px; }
     .rotation-grid { grid-template-columns: 1fr; }
-    .rotation-list { grid-template-columns: 1fr; }
+    .rotation-list, .lobby .rotation-list { grid-template-columns: 1fr; }
+    .lobby .rotation-list .pl { min-height: 0; }
+    .seg button { padding: 7px 11px; }
   }
   @media (max-width: 520px) {
     .month .y-long { display: none; }
@@ -247,6 +253,7 @@
           <button type="button" data-sala="ALL" aria-pressed="true">Todas</button>
           <button type="button" data-sala="BOXING" aria-pressed="false">Boxing</button>
           <button type="button" data-sala="RUNNING" aria-pressed="false">Running</button>
+          <button type="button" data-sala="LOBBY" aria-pressed="false">Lobby</button>
         </div>
       </div>
       <div class="ctl ctl-profe" role="group" aria-labelledby="lbl-profe">
@@ -268,18 +275,20 @@
 <footer>
   <div class="wrap foot">
     <img src="data:image/png;base64,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n/zeFeYuzSW3Ki5D2c9diIWgG0UmN7QS78H2ft+VtF98NL3PjABOHAPclo48PvN7tkAIaWaCXQt8Sllg1fOaDyzlbDECBPC8JHzxrYsDwdOKj1yN7Y3panSfJH1osOn+wDfFoeRKg7M2lhPn5RR4xLH6hPYrG0GgrcttOXYMRVoRBR6jsYCDsDdGG9PVFmx1hxGUkuuJ4GOe8uZyr83vB3YbrspO8gH/fz8KLPz8S8p9IR+ALMRiQYfF90sCWF71OAo7z03j/DuvBUcBf2eQjtik44/D9zsSS1akeZB0jmXwOjIpovjWPUoBB0VAMH9LN8CmyQRvX9rlFOxEdKMUhOGxfluB2Q1hNNOqEPku7sCD3OuE4mHJbVk68vh8v4mC2VQjLYkR/C7jkwWMS/gAHgtqo1paLcOpnJekpHN8pvfnbDtKS0u3W9gh+AqWijhL2i8u7bdKMdRe+rJ3Ju0XnwBOFSMoNPd5vAockXy/+BqNnlGs/QaEAJ6TtF98AniZYnYrGUj9Ezv1IIvZDxppgINPYgcKtoT51RZg+Vr27VgmL5IAxnMwJ2NZIQp6fxpA2eXx7aNrqU5LklbNF26PYKaHpoBDRr/9wJlJ+OJbVzu/TxOvX7ukc2/xdvDoJBPcpWf9CpbjpSUOxigwwX2CMMm3ESwM/N60Iqh63FSSdjFKWivlc63ATrzKeqUaMBIi389h2cCK7aR565XLZQTPy2VYWrrk+0UyGw7sgOVCKdJZ+n6zYgCbJg24rfabCnxBcZ8Honn+7gQ2jc88PaK0ubwI0kkPJMR7fBp+vPOHCsXkQp4FdmI69vjYrRYonwDlL9Vvk+aLTwBPc5pBi/k1wbtPQL/iovwkgBGxWwEsCbSENpSzzwEuTCW3+Hy/04C3RNlNk7ltBzXfg5L2i28tLQk8cmVQewP8Jmm/+Hy/K4LxY7kyLeiF72ngY70qfNrUtU86j2EQcJD1SlXgXa5cPEeGneW7RkNnmKY1BdjHHVYrODANq+2eZQ2DFBvJ/EZymfZGF9h0qCh4WhK++Hy/KxXP8ZXQq4exrPatFPnGo/2OAV5SGHSUld3O1OBGtZShQU4Adg/QIShDvbSwbZb3JNMb1yU6ENt6aJT1eoSVj63A95LvF5/vN6eE109T0tl/vkuT8I1SoP0M8HUs5OpNpVrBm95NwLWaRqn+D18FffgwBDcyAAAArXRFWHRpbXBlY2NhYmxlOnByb21wdABPcmlnZW46IGxvZ29fMC5wbmcgKGlzb3RpcG8gb2ZpY2lhbCBkZSBTVy8vVENILCBkZSBGZWRlcmljbykgcmVjb3J0YWRvIGEgbGEgdGludGEgeSByZWR1Y2lkbyBhIDE2MCBweCwgbmVncm8gc29icmUgdHJhbnNwYXJlbnRlLCBjb24gUElMLiBTaW4gZ2VuZXJhY2nDs24uCjGgfVUAAAAASUVORK5CYII=" alt="SW//TCH" width="160" height="149">
-    <p>Las playlists se abren en Spotify, en las cuentas de SW//TCH Boxing y SW//TCH Running. Se publican mes a mes.</p>
+    <p>Las playlists se abren en Spotify, en las cuentas de SW//TCH Boxing, Running y Lobby. Las de clase se publican mes a mes; las del Lobby y las MAIN no cambian.</p>
   </div>
 </footer>
 
 <script>
-const PLAYLISTS = [{"sala":"BOXING","name":"BOXING LUNES 05/10","id":"10a0wGDI9BUHE5hhGtmkiY","date":"2026-10-05","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":82},{"sala":"BOXING","name":"BOXING LUNES 12/10","id":"12xxWDfTPMIQ1LLg96m5n3","date":"2026-10-12","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":29,"min":89},{"sala":"BOXING","name":"BOXING LUNES 19/10","id":"5FrJXuEeMRbm03aYqqouGq","date":"2026-10-19","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":30,"min":94},{"sala":"BOXING","name":"BOXING LUNES 26/10","id":"0uuD89iQ0XmgolyAI9x47g","date":"2026-10-26","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":30,"min":89},{"sala":"BOXING","name":"BOXING/MARTES/06/10/ANDREW FRENCH","id":"0tOgmPjdbCt4DvM48Mz72m","date":"2026-10-06","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":81},{"sala":"BOXING","name":"BOXING/MARTES/06/10/ROSTY","id":"18A2iQ6BuICk3uxL7oC5rz","date":"2026-10-06","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/13/10/ANDREW FRENCH","id":"5EbgLpQ4UzRkr10HD9wcNz","date":"2026-10-13","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":88},{"sala":"BOXING","name":"BOXING/MARTES/13/10/ROSTY","id":"2LdKBjYemhgpGIx1HaasIm","date":"2026-10-13","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/20/10/ANDREW FRENCH","id":"1GsNXsLn69MozJLUcxtaA1","date":"2026-10-20","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/20/10/ROSTY","id":"7kP1A8tyiV9k05I4xWuTb3","date":"2026-10-20","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":87},{"sala":"BOXING","name":"BOXING/MARTES/27/10/ANDREW FRENCH","id":"2Dz2lyQ2Mxgm5NL4Dv4WrA","date":"2026-10-27","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":85},{"sala":"BOXING","name":"BOXING/MARTES/27/10/ROSTY","id":"1UT7M0Zgtm3wqJ4UCwnGZp","date":"2026-10-27","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":72},{"sala":"BOXING","name":"BOXING/MIERCOLES/07/10/BRAILER","id":"2Paebcto0EtsEN8CS6Fhtm","date":"2026-10-07","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":79},{"sala":"BOXING","name":"BOXING/MIERCOLES/14/10/BRAILER","id":"1aHs2oBHB7jyGKxBh7Dqx2","date":"2026-10-14","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":79},{"sala":"BOXING","name":"BOXING/MIERCOLES/21/10/BRAILER","id":"2VcnowHmSxHddszKEPp8yK","date":"2026-10-21","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":81},{"sala":"BOXING","name":"BOXING/MIERCOLES/28/10/BRAILER","id":"63jUYJYRXzMhWjSLcPBKig","date":"2026-10-28","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":80},{"sala":"BOXING","name":"BOXING/MIERCOLES/MAIN REGGAETON/ANA MARIA","id":"1Z9iFAC5ye5NrFRvkbBv5I","main":"Reggaeton","dia":"MIERCOLES","profe":"Ana María","tracks":45,"min":151},{"sala":"BOXING","name":"BOXING/MIERCOLES/MAIN TECNO ULTRA HYPE/ANA MARIA","id":"31XSV4xNpS6E0Ce5I85JJg","main":"Tecno Ultra Hype","dia":"MIERCOLES","profe":"Ana María","tracks":45,"min":139},{"sala":"RUNNING","name":"RUNNING/JUEVES/08/10/JIMMY","id":"5pgJhgsgafJqORY9AAZqc5","date":"2026-10-08","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/JUEVES/08/10/KENNETH","id":"3k4N7ZNzxPJVu2YL8XU2Xr","date":"2026-10-08","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/JUEVES/15/10/JIMMY","id":"619fY3aFe9FrzSBBtUZex8","date":"2026-10-15","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/JUEVES/15/10/KENNETH","id":"1TlkndMVJLFk4dITV6DbGG","date":"2026-10-15","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/JUEVES/22/10/JIMMY","id":"4tMMjzmjpZItauWNuvZoee","date":"2026-10-22","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":112},{"sala":"RUNNING","name":"RUNNING/JUEVES/22/10/KENNETH","id":"3eQbXcVqoiRZsD30K4GBo2","date":"2026-10-22","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":100},{"sala":"RUNNING","name":"RUNNING/JUEVES/29/10/JIMMY","id":"15wO2GzXp5rXZRZSSs68W3","date":"2026-10-29","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/JUEVES/29/10/KENNETH","id":"1L7T5rMZAJpD9yutKlHH2N","date":"2026-10-29","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/MARTES/06/10/BRAILER","id":"60RspoLJR9zmugcs221iO7","date":"2026-10-06","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":24,"min":73},{"sala":"RUNNING","name":"RUNNING/MARTES/06/10/JIMMY","id":"1lJhReRqw2cBktOermtKsx","date":"2026-10-06","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":28,"min":98},{"sala":"RUNNING","name":"RUNNING/MARTES/13/10/BRAILER","id":"3H4AcIYL1D6sqpe7E6d3Kw","date":"2026-10-13","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":30,"min":106},{"sala":"RUNNING","name":"RUNNING/MARTES/13/10/JIMMY","id":"2OAG0wlkaMxNwSV0jaQ1C4","date":"2026-10-13","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/MARTES/20/10/BRAILER","id":"7f4WHcSx4Y5TyYkPr8KT45","date":"2026-10-20","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/MARTES/20/10/JIMMY","id":"6fdz96E9HEQlxrbtvmnVk3","date":"2026-10-20","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":28,"min":96},{"sala":"RUNNING","name":"RUNNING/MARTES/27/10/BRAILER","id":"2fBvzIK7sMwlQJ5fwxR2tE","date":"2026-10-27","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":29,"min":90},{"sala":"RUNNING","name":"RUNNING/MARTES/27/10/JIMMY","id":"7jaeoLAM8v3frl7LjdAE2q","date":"2026-10-27","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/07/10/JIMMY","id":"4esLwdCAqb7CQQOsfNoReJ","date":"2026-10-07","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":93},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/07/10/LUIS","id":"1KnBW5uTd6hdZa24xoYzoA","date":"2026-10-07","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/14/10/JIMMY","id":"2SdFYyRa9aCzphRaBsCM9x","date":"2026-10-14","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/14/10/LUIS","id":"6G8nxXgy4WNoxIeoUqipAE","date":"2026-10-14","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":104},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/21/10/JIMMY","id":"3LrNRxYJCFE2EZreSHxSwu","date":"2026-10-21","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":101},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/21/10/LUIS","id":"6bXwtZKURNQgo7bB20ZoQk","date":"2026-10-21","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/28/10/JIMMY","id":"774xF3sxo7PGjIPENDsMAm","date":"2026-10-28","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/28/10/LUIS","id":"16KTQE7PahzLjw2JOBvodT","date":"2026-10-28","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/SABADO/10/10/LUIS","id":"5cyX47MS4KxqbaprrK6y8m","date":"2026-10-10","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/SABADO/17/10/LUIS","id":"7rMqTMX7xuO3UIsCWMIk2F","date":"2026-10-17","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/SABADO/24/10/LUIS","id":"6dNBhahb2i0I0uCtpBkD0H","date":"2026-10-24","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/SABADO/31/10/LUIS","id":"7xhS3zKf90NAH7QaZDIzLD","date":"2026-10-31","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/BRAILER","id":"1dKirTFFzrwJB0kMKHxlDz","date":"2026-10-09","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":118},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/KENNETH","id":"5HKmrAK8c97Pxbf0UrrCwv","date":"2026-10-09","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/LUIS","id":"0w85HOlqcoanb1gXghEcL2","date":"2026-10-09","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/BRAILER","id":"20zBvrfkPi7duxZw6EY4NB","date":"2026-10-16","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":103},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/KENNETH","id":"2nIWNHYQy296uYT2zSZghc","date":"2026-10-16","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/LUIS","id":"4MSRmMwhwms1m2NaQoAla5","date":"2026-10-16","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/BRAILER","id":"4RECYmrOKYAn4uop77o6lY","date":"2026-10-23","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":104},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/KENNETH","id":"6Grt5uuZBlEuDJlKQuYsEF","date":"2026-10-23","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/LUIS","id":"2wKJGW8amkX1hnUtOyCbbj","date":"2026-10-23","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/BRAILER","id":"2TRhECt5dOZQZU8dLduRfX","date":"2026-10-30","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":103},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/KENNETH","id":"7FKfoMafcHx9em3vOZbLxI","date":"2026-10-30","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":102},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/LUIS","id":"3SgboUdxwNT4R6MFbe1w69","date":"2026-10-30","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":104}];
+const PLAYLISTS = [{"sala":"BOXING","name":"BOXING LUNES 05/10","id":"10a0wGDI9BUHE5hhGtmkiY","date":"2026-10-05","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":82},{"sala":"BOXING","name":"BOXING LUNES 12/10","id":"12xxWDfTPMIQ1LLg96m5n3","date":"2026-10-12","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":29,"min":89},{"sala":"BOXING","name":"BOXING LUNES 19/10","id":"5FrJXuEeMRbm03aYqqouGq","date":"2026-10-19","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":30,"min":94},{"sala":"BOXING","name":"BOXING LUNES 26/10","id":"0uuD89iQ0XmgolyAI9x47g","date":"2026-10-26","dia":"LUNES","profe":"Rosty Rincón","turno":"PM","tracks":30,"min":89},{"sala":"BOXING","name":"BOXING/MARTES/06/10/ANDREW FRENCH","id":"0tOgmPjdbCt4DvM48Mz72m","date":"2026-10-06","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":81},{"sala":"BOXING","name":"BOXING/MARTES/06/10/ROSTY","id":"18A2iQ6BuICk3uxL7oC5rz","date":"2026-10-06","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/13/10/ANDREW FRENCH","id":"5EbgLpQ4UzRkr10HD9wcNz","date":"2026-10-13","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":88},{"sala":"BOXING","name":"BOXING/MARTES/13/10/ROSTY","id":"2LdKBjYemhgpGIx1HaasIm","date":"2026-10-13","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/20/10/ANDREW FRENCH","id":"1GsNXsLn69MozJLUcxtaA1","date":"2026-10-20","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":77},{"sala":"BOXING","name":"BOXING/MARTES/20/10/ROSTY","id":"7kP1A8tyiV9k05I4xWuTb3","date":"2026-10-20","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":87},{"sala":"BOXING","name":"BOXING/MARTES/27/10/ANDREW FRENCH","id":"2Dz2lyQ2Mxgm5NL4Dv4WrA","date":"2026-10-27","dia":"MARTES","profe":"Andrew French","turno":"AM","tracks":25,"min":85},{"sala":"BOXING","name":"BOXING/MARTES/27/10/ROSTY","id":"1UT7M0Zgtm3wqJ4UCwnGZp","date":"2026-10-27","dia":"MARTES","profe":"Rosty Rincón","turno":"PM","tracks":26,"min":72},{"sala":"BOXING","name":"BOXING/MIERCOLES/07/10/BRAILER","id":"2Paebcto0EtsEN8CS6Fhtm","date":"2026-10-07","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":79},{"sala":"BOXING","name":"BOXING/MIERCOLES/14/10/BRAILER","id":"1aHs2oBHB7jyGKxBh7Dqx2","date":"2026-10-14","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":79},{"sala":"BOXING","name":"BOXING/MIERCOLES/21/10/BRAILER","id":"2VcnowHmSxHddszKEPp8yK","date":"2026-10-21","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":81},{"sala":"BOXING","name":"BOXING/MIERCOLES/28/10/BRAILER","id":"63jUYJYRXzMhWjSLcPBKig","date":"2026-10-28","dia":"MIERCOLES","profe":"Brailer Niño","turno":"PM","tracks":25,"min":80},{"sala":"BOXING","name":"BOXING/MIERCOLES/MAIN REGGAETON/ANA MARIA","id":"1Z9iFAC5ye5NrFRvkbBv5I","main":"Reggaeton","dia":"MIERCOLES","profe":"Ana María","tracks":45,"min":151},{"sala":"BOXING","name":"BOXING/MIERCOLES/MAIN TECNO ULTRA HYPE/ANA MARIA","id":"31XSV4xNpS6E0Ce5I85JJg","main":"Tecno Ultra Hype","dia":"MIERCOLES","profe":"Ana María","tracks":45,"min":139},{"sala":"RUNNING","name":"RUNNING/JUEVES/08/10/JIMMY","id":"5pgJhgsgafJqORY9AAZqc5","date":"2026-10-08","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/JUEVES/08/10/KENNETH","id":"3k4N7ZNzxPJVu2YL8XU2Xr","date":"2026-10-08","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/JUEVES/15/10/JIMMY","id":"619fY3aFe9FrzSBBtUZex8","date":"2026-10-15","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/JUEVES/15/10/KENNETH","id":"1TlkndMVJLFk4dITV6DbGG","date":"2026-10-15","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/JUEVES/22/10/JIMMY","id":"4tMMjzmjpZItauWNuvZoee","date":"2026-10-22","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":112},{"sala":"RUNNING","name":"RUNNING/JUEVES/22/10/KENNETH","id":"3eQbXcVqoiRZsD30K4GBo2","date":"2026-10-22","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":100},{"sala":"RUNNING","name":"RUNNING/JUEVES/29/10/JIMMY","id":"15wO2GzXp5rXZRZSSs68W3","date":"2026-10-29","dia":"JUEVES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/JUEVES/29/10/KENNETH","id":"1L7T5rMZAJpD9yutKlHH2N","date":"2026-10-29","dia":"JUEVES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/MARTES/06/10/BRAILER","id":"60RspoLJR9zmugcs221iO7","date":"2026-10-06","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":24,"min":73},{"sala":"RUNNING","name":"RUNNING/MARTES/06/10/JIMMY","id":"1lJhReRqw2cBktOermtKsx","date":"2026-10-06","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":28,"min":98},{"sala":"RUNNING","name":"RUNNING/MARTES/13/10/BRAILER","id":"3H4AcIYL1D6sqpe7E6d3Kw","date":"2026-10-13","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":30,"min":106},{"sala":"RUNNING","name":"RUNNING/MARTES/13/10/JIMMY","id":"2OAG0wlkaMxNwSV0jaQ1C4","date":"2026-10-13","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/MARTES/20/10/BRAILER","id":"7f4WHcSx4Y5TyYkPr8KT45","date":"2026-10-20","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/MARTES/20/10/JIMMY","id":"6fdz96E9HEQlxrbtvmnVk3","date":"2026-10-20","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":28,"min":96},{"sala":"RUNNING","name":"RUNNING/MARTES/27/10/BRAILER","id":"2fBvzIK7sMwlQJ5fwxR2tE","date":"2026-10-27","dia":"MARTES","profe":"Brailer Niño","turno":"AM","tracks":29,"min":90},{"sala":"RUNNING","name":"RUNNING/MARTES/27/10/JIMMY","id":"7jaeoLAM8v3frl7LjdAE2q","date":"2026-10-27","dia":"MARTES","profe":"Jimmy Torres","turno":"PM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/07/10/JIMMY","id":"4esLwdCAqb7CQQOsfNoReJ","date":"2026-10-07","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":93},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/07/10/LUIS","id":"1KnBW5uTd6hdZa24xoYzoA","date":"2026-10-07","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/14/10/JIMMY","id":"2SdFYyRa9aCzphRaBsCM9x","date":"2026-10-14","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/14/10/LUIS","id":"6G8nxXgy4WNoxIeoUqipAE","date":"2026-10-14","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":104},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/21/10/JIMMY","id":"3LrNRxYJCFE2EZreSHxSwu","date":"2026-10-21","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":101},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/21/10/LUIS","id":"6bXwtZKURNQgo7bB20ZoQk","date":"2026-10-21","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/28/10/JIMMY","id":"774xF3sxo7PGjIPENDsMAm","date":"2026-10-28","dia":"MIERCOLES","profe":"Jimmy Torres","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/MIERCOLES/28/10/LUIS","id":"16KTQE7PahzLjw2JOBvodT","date":"2026-10-28","dia":"MIERCOLES","profe":"Luis Martínez","turno":"AM · PM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/SABADO/10/10/LUIS","id":"5cyX47MS4KxqbaprrK6y8m","date":"2026-10-10","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":98},{"sala":"RUNNING","name":"RUNNING/SABADO/17/10/LUIS","id":"7rMqTMX7xuO3UIsCWMIk2F","date":"2026-10-17","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":107},{"sala":"RUNNING","name":"RUNNING/SABADO/24/10/LUIS","id":"6dNBhahb2i0I0uCtpBkD0H","date":"2026-10-24","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":99},{"sala":"RUNNING","name":"RUNNING/SABADO/31/10/LUIS","id":"7xhS3zKf90NAH7QaZDIzLD","date":"2026-10-31","dia":"SABADO","profe":"Luis Martínez","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/BRAILER","id":"1dKirTFFzrwJB0kMKHxlDz","date":"2026-10-09","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":118},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/KENNETH","id":"5HKmrAK8c97Pxbf0UrrCwv","date":"2026-10-09","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":96},{"sala":"RUNNING","name":"RUNNING/VIERNES/09/10/LUIS","id":"0w85HOlqcoanb1gXghEcL2","date":"2026-10-09","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/BRAILER","id":"20zBvrfkPi7duxZw6EY4NB","date":"2026-10-16","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":103},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/KENNETH","id":"2nIWNHYQy296uYT2zSZghc","date":"2026-10-16","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/VIERNES/16/10/LUIS","id":"4MSRmMwhwms1m2NaQoAla5","date":"2026-10-16","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":97},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/BRAILER","id":"4RECYmrOKYAn4uop77o6lY","date":"2026-10-23","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":104},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/KENNETH","id":"6Grt5uuZBlEuDJlKQuYsEF","date":"2026-10-23","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":94},{"sala":"RUNNING","name":"RUNNING/VIERNES/23/10/LUIS","id":"2wKJGW8amkX1hnUtOyCbbj","date":"2026-10-23","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":95},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/BRAILER","id":"2TRhECt5dOZQZU8dLduRfX","date":"2026-10-30","dia":"VIERNES","profe":"Brailer Niño","turno":"PM","tracks":30,"min":103},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/KENNETH","id":"7FKfoMafcHx9em3vOZbLxI","date":"2026-10-30","dia":"VIERNES","profe":"Kenneth Correa","turno":"AM","tracks":30,"min":102},{"sala":"RUNNING","name":"RUNNING/VIERNES/30/10/LUIS","id":"3SgboUdxwNT4R6MFbe1w69","date":"2026-10-30","dia":"VIERNES","profe":"Luis Martínez","turno":"AM","tracks":30,"min":104},{"sala":"LOBBY","id":"5nArqKSUs9xn3Mx4LV7GOL","name":"Swiitch Lobby (deep soulful house)","lobby":"Deep soulful house"},{"sala":"LOBBY","id":"4XE2EBExN7Nd8kuKRBAbnE","name":"Swiitch Lobby (chill house)","lobby":"Chill house"},{"sala":"LOBBY","id":"1haLGKMKET616XQH8EeMLf","name":"Swiitch Lobby (brooklyn vibes)","lobby":"Brooklyn vibes"}];
 
 const DIAS = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"];
 const DIA_CORTO = { LUNES: "Lun", MARTES: "Mar", MIERCOLES: "Mié", JUEVES: "Jue", VIERNES: "Vie", SABADO: "Sáb", DOMINGO: "Dom" };
 const DIA_LARGO = { LUNES: "lunes", MARTES: "martes", MIERCOLES: "miércoles", JUEVES: "jueves", VIERNES: "viernes", SABADO: "sábado", DOMINGO: "domingo" };
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-const SALA = { BOXING: { tag: "BXNG", cls: "box", label: "Boxing" }, RUNNING: { tag: "RNNG", cls: "run", label: "Running" } };
+const SALA = { BOXING: { tag: "BXNG", cls: "box", label: "Boxing", del: "de Boxing" },
+               RUNNING: { tag: "RNNG", cls: "run", label: "Running", del: "de Running" },
+               LOBBY: { tag: "LBBY", cls: "lob", label: "Lobby", del: "del Lobby" } };
 const TURNO_ORDEN = t => (t.startsWith("AM") ? 0 : t === "PM" ? 1 : 2);
 const ARROW = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6 4.5h5.5V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -292,6 +301,7 @@ const TODAY = /^\d{4}-\d\d-\d\d$/.test(forced || "") ? forced : iso(new Date(Dat
 
 const dated = PLAYLISTS.filter(p => p.date);
 const mains = PLAYLISTS.filter(p => p.main);
+const lobby = PLAYLISTS.filter(p => p.sala === "LOBBY");
 
 function mondayOf(d) { const x = new Date(d); x.setUTCDate(x.getUTCDate() - ((x.getUTCDay() + 6) % 7)); return x; }
 
@@ -310,21 +320,23 @@ weeks.sort((a, b) => (a.past - b.past) || (a.past ? b.key.localeCompare(a.key) :
 
 function plLink(p, nameHtml, metaHtml) {
   const s = SALA[p.sala];
-  const label = p.main
+  const label = p.lobby
+    ? `Lobby, ${p.lobby}, abrir en Spotify`
+    : p.main
     ? `${s.label}, ${p.main}, ${p.profe}, abrir en Spotify`
     : `${s.label}, ${DIA_LARGO[p.dia]} ${parse(p.date).getUTCDate()} de ${MESES[parse(p.date).getUTCMonth()]}${p.turno ? ", " + p.turno : ""}, ${p.profe}, abrir en Spotify`;
   return `<a class="pl" href="https://open.spotify.com/playlist/${esc(p.id)}" target="_blank" rel="noopener"
-      data-sala="${p.sala}" data-profe="${esc(p.profe)}" aria-label="${esc(label)}">
+      data-sala="${p.sala}" data-profe="${esc(p.profe || "")}" aria-label="${esc(label)}">
     <span class="pl-top"><span class="tag ${s.cls}">${s.tag}</span>${p.turno ? `<span class="turno">${esc(p.turno)}</span>` : ""}</span>
     <span class="pl-name">${nameHtml}</span>
-    <span class="pl-meta">${metaHtml}</span>
+    ${metaHtml ? `<span class="pl-meta">${metaHtml}</span>` : ""}
     <span class="pl-go">${ARROW}</span>
   </a>`;
 }
 
 function render() {
   const root = document.getElementById("board-root");
-  const html = weeks.map((w, wi) => {
+  const weekHtml = weeks.map((w, wi) => {
     const mon = parse(w.key);
     const hasSunday = w.items.some(p => p.dia === "DOMINGO");
     const days = DIAS.slice(0, hasSunday ? 7 : 6).map((dia, i) => {
@@ -351,7 +363,7 @@ function render() {
       <div class="week-head"><h2 id="wh-${wi + 1}">Semana del ${range}</h2><span class="count" data-count></span></div>
       <div class="board" style="--cols: ${days.length}">${cols}</div>
     </section>`;
-  }).join("");
+  });
 
   const rot = mains.length ? `<section class="rotation" id="rotacion" aria-labelledby="rot-h">
       <div class="rotation-grid">
@@ -360,19 +372,34 @@ function render() {
         <div class="rotation-list">${mains.map(p => plLink(p, esc(p.main), `${p.tracks} temas · ${p.min} min`)).join("")}</div>
       </div></section>` : "";
 
-  root.insertAdjacentHTML("beforeend", html + rot);
+  const lob = lobby.length ? `<section class="rotation lobby" id="lobby" aria-labelledby="lob-h">
+      <div class="rotation-grid">
+        <div><h2 id="lob-h">El Lobby</h2>
+          <p>Lo que suena en la recepción de SW//TCH. Tres ambientes que no cambian por fecha, en su propio Spotify.</p></div>
+        <div class="rotation-list">${lobby.map(p => plLink(p, esc(p.lobby), "")).join("")}</div>
+      </div></section>` : "";
 
-  // Riel de semanas
-  document.getElementById("weeks").innerHTML = weeks.map((w, wi) => {
+  // Como en la recepción: semanas vigentes, lo que no cambia por fecha (MAIN y Lobby), y al final las semanas pasadas
+  const current = weeks.map((w, i) => w.past ? "" : weekHtml[i]).join("");
+  const past = weeks.map((w, i) => w.past ? weekHtml[i] : "").join("");
+  root.insertAdjacentHTML("beforeend", current + rot + lob + past);
+
+  // Riel: mismo orden que la página
+  const railWeek = (w, wi) => {
     const sec = document.getElementById(`semana-${wi + 1}`);
     const a = parse(sec.dataset.start), b = parse(sec.dataset.end);
     const isNow = sec.dataset.start <= TODAY && TODAY <= sec.dataset.end;
     return `<a href="#semana-${wi + 1}" data-week="${wi + 1}">${a.getUTCDate()}–${b.getUTCDate()} ${MESES[b.getUTCMonth()].slice(0, 3)}${isNow ? '<span class="today-dot" title="Esta semana"></span><span class="visually-hidden"> (esta semana)</span>' : ""}</a>`;
-  }).join("") + (mains.length ? `<a href="#rotacion" data-week="rot">MAIN</a>` : "");
+  };
+  document.getElementById("weeks").innerHTML =
+    weeks.map((w, wi) => w.past ? "" : railWeek(w, wi)).join("") +
+    (mains.length ? `<a href="#rotacion" data-week="rot">MAIN</a>` : "") +
+    (lobby.length ? `<a href="#lobby" data-week="lobby">Lobby</a>` : "") +
+    weeks.map((w, wi) => w.past ? railWeek(w, wi) : "").join("");
 
   // Chips de profe con su cantidad de clases
   const counts = {};
-  PLAYLISTS.forEach(p => counts[p.profe] = (counts[p.profe] || 0) + 1);
+  PLAYLISTS.filter(p => p.profe).forEach(p => counts[p.profe] = (counts[p.profe] || 0) + 1);
   const profes = Object.keys(counts).sort((a, b) => a.localeCompare(b, "es"));
   document.getElementById("profes").innerHTML =
     `<button type="button" class="chip" data-profe="" aria-pressed="true">Todos</button>` +
@@ -399,12 +426,18 @@ function apply() {
     if (!visible && !note) day.querySelector(".slots").insertAdjacentHTML("beforeend", `<p class="slot-empty">Sin playlist publicada</p>`);
     if (visible && note) note.remove();
   });
+  document.querySelectorAll(".week, .rotation").forEach(sec => {
+    const none = ![...sec.querySelectorAll(".pl")].some(el => !el.hidden);
+    sec.classList.toggle("off", none);
+    const link = document.querySelector(`#weeks a[href="#${sec.id}"]`);
+    if (link) link.hidden = none;
+  });
   document.querySelectorAll(".week").forEach(w => {
     const vis = [...w.querySelectorAll(".pl")].filter(el => !el.hidden);
     const n = state.profe ? vis.filter(el => el.classList.contains("hit")).length : vis.length;
     w.querySelector("[data-count]").textContent = `${n} ${n === 1 ? "clase" : "clases"}`;
   });
-  const salaTxt = state.sala === "ALL" ? "" : ` de ${SALA[state.sala].label}`;
+  const salaTxt = state.sala === "ALL" ? "" : ` ${SALA[state.sala].del}`;
   const status = document.getElementById("status");
   const empty = document.getElementById("empty");
   if (state.profe && !hits) {
@@ -417,17 +450,26 @@ function apply() {
   }
 }
 
+function setSala(v) {
+  state.sala = v;
+  document.querySelectorAll("#sala button").forEach(x => x.setAttribute("aria-pressed", x.dataset.sala === v));
+}
+function setProfe(v) {
+  state.profe = v;
+  document.querySelectorAll("#profes .chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.profe === v));
+}
+
 function bind() {
   document.getElementById("sala").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    state.sala = b.dataset.sala;
-    document.querySelectorAll("#sala button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    setSala(b.dataset.sala);
+    if (state.sala === "LOBBY" && state.profe) setProfe("");
     apply();
   });
   document.getElementById("profes").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    state.profe = state.profe === b.dataset.profe ? "" : b.dataset.profe;
-    document.querySelectorAll("#profes .chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.profe === state.profe));
+    setProfe(state.profe === b.dataset.profe ? "" : b.dataset.profe);
+    if (state.profe && state.sala === "LOBBY") setSala("ALL");
     apply();
     if (state.profe) {
       const first = document.querySelector(".pl.hit");
