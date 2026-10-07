@@ -60,13 +60,14 @@
     padding-left: 14px; border-left: 1px solid var(--rule); }
   .month { font: 700 12px/1 var(--data); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
 
-  .intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 34ch); gap: 28px 64px;
-    align-items: end; padding: 56px 0 40px; }
-  h1 { grid-column: 1 / -1; font: 800 clamp(40px, 6vw, 92px)/.94 var(--display); letter-spacing: -.035em; margin: 0;
+  /* Título y bajada lado a lado: la bajada es la nota al margen del horario, apoyada en la última línea del título */
+  .intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 30ch); gap: 24px clamp(40px, 5vw, 80px);
+    align-items: end; padding: 56px 0 44px; }
+  h1 { font: 800 clamp(40px, 6vw, 92px)/.94 var(--display); letter-spacing: -.035em; margin: 0;
     text-wrap: balance; }
   h1 .nb { white-space: nowrap; }
-  .lede { grid-column: 2; }
-  .lede { margin: 0; max-width: 42ch; color: var(--ink-2); font-size: 17px; line-height: 1.55; text-wrap: pretty; }
+  .lede { margin: 0 0 .5em; padding-top: 14px; border-top: 1px solid var(--rule); color: var(--ink-2);
+    font-size: 17px; line-height: 1.5; text-wrap: pretty; }
   .lede strong { color: var(--ink); font-weight: 600; }
 
   /* ---------- Filtros ---------- */
@@ -105,6 +106,7 @@
   .weeks a .today-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--marker);
     border: 1px solid var(--ink); margin-left: 6px; vertical-align: 1px; }
   .status { font: 400 12px/1.4 var(--data); color: var(--ink-3); margin-left: auto; min-height: 1em; }
+  @media (max-width: 1399px) { .status { display: none; } }  /* sin espacio: primero que se vean todos los profes */
 
   /* ---------- Horario ---------- */
   .week { padding: 44px 0 8px; }
@@ -188,8 +190,8 @@
     html { scroll-padding-top: 56px; }
     .controls { position: static; }
     .rail { top: 0; }
-    .intro { grid-template-columns: 1fr; padding: 36px 0 28px; gap: 16px; }
-    .lede { grid-column: 1; }
+    .intro { grid-template-columns: 1fr; padding: 36px 0 28px; gap: 20px; }
+    .lede { margin: 0; max-width: 42ch; }
     .brand img.word { height: 17px; }
     .brand img.iso { height: 26px; }
     .controls-row { gap: 10px; padding: 10px 0; }
